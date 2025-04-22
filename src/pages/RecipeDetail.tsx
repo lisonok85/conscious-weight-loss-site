@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart, Share2, Clock, Flame, Printer, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import AIImageGenerator from "@/components/AIImageGenerator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Моковые данные для рецептов
 const recipesData = [
@@ -42,7 +43,22 @@ const recipesData = [
       fiber: "7 г"
     },
     publishDate: "10 марта 2023",
-    likes: 87
+    likes: 87,
+    // Добавляем дополнительные фотографии для карусели
+    additionalPhotos: [
+      {
+        prompt: "Яркий смузи-боул с ягодами и зеленью, крупный план, фуд-фотография",
+        alt: "Крупный план смузи-боула с ягодами"
+      },
+      {
+        prompt: "Процесс приготовления смузи-боула, ингредиенты разложены на столе, блендер",
+        alt: "Процесс приготовления смузи-боула" 
+      },
+      {
+        prompt: "Смузи-боул с бананом и киви, украшенный семенами чиа, вид сверху",
+        alt: "Смузи-боул с бананом и киви"
+      }
+    ]
   },
   {
     id: "2",
@@ -79,7 +95,8 @@ const recipesData = [
       fiber: "1 г"
     },
     publishDate: "15 апреля 2023",
-    likes: 124
+    likes: 124,
+    additionalPhotos: []
   }
 ];
 
@@ -134,14 +151,50 @@ const RecipeDetail = () => {
             </div>
           </div>
           
-          <div className="aspect-video w-full bg-muted rounded-lg mb-8 overflow-hidden">
-            <AIImageGenerator 
-              prompt={recipe.imagePrompt}
-              alt={recipe.title} 
-              className="w-full h-full"
-              fallbackSrc={recipe.image}
-            />
-          </div>
+          {/* Добавляем табы для основного фото и галереи */}
+          <Tabs defaultValue="main" className="mb-8">
+            <TabsList className="w-full justify-start mb-4">
+              <TabsTrigger value="main">Основное фото</TabsTrigger>
+              <TabsTrigger value="gallery">Галерея ({recipe.additionalPhotos.length + 1})</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="main">
+              <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden">
+                <AIImageGenerator 
+                  prompt={recipe.imagePrompt}
+                  alt={recipe.title} 
+                  className="w-full h-full"
+                  fallbackSrc={recipe.image}
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="gallery">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Основное фото в галерее */}
+                <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+                  <AIImageGenerator 
+                    prompt={recipe.imagePrompt}
+                    alt={recipe.title} 
+                    className="w-full h-full"
+                    fallbackSrc={recipe.image}
+                  />
+                </div>
+                
+                {/* Дополнительные фото */}
+                {recipe.additionalPhotos.map((photo, index) => (
+                  <div key={index} className="aspect-video bg-muted rounded-lg overflow-hidden">
+                    <AIImageGenerator 
+                      prompt={photo.prompt}
+                      alt={photo.alt} 
+                      className="w-full h-full"
+                      fallbackSrc="/placeholder.svg"
+                    />
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div className="md:col-span-2">
