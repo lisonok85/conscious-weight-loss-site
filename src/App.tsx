@@ -10,6 +10,7 @@ import Recipes from "./pages/Recipes";
 import Stories from "./pages/Stories";
 import Photos from "./pages/Photos";
 import StoryDetail from "./pages/StoryDetail";
+import RecipeDetail from "./pages/RecipeDetail";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/recipes" element={<Recipes />} />
+          <Route path="/recipes/:id" element={<RecipeDetail />} />
           <Route path="/stories" element={<Stories />} />
           <Route path="/stories/:id" element={<StoryDetail />} />
           <Route path="/photos" element={<Photos />} />
