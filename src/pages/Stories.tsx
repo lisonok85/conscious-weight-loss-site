@@ -5,6 +5,7 @@ import ContentCard from "@/components/ContentCard";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import AIImageGenerator from "@/components/AIImageGenerator";
 
 const stories = [
   {
@@ -13,6 +14,7 @@ const stories = [
     author: "Елена, 35 лет",
     description: "Как я потеряла 20 кг за год без диет и голодания",
     image: "/placeholder.svg",
+    imagePrompt: "Фото до и после похудения, трансформация тела, здоровый образ жизни, успешное похудение -20кг",
     results: "-20 кг",
     time: "12 месяцев",
     content: "Мой путь к осознанному похудению начался не с диеты, а с изменения отношения к еде и своему телу...",
@@ -23,6 +25,7 @@ const stories = [
     author: "Александр, 42 года",
     description: "История преодоления пищевой зависимости и обретения контроля",
     image: "/placeholder.svg",
+    imagePrompt: "Человек выбирает здоровую пищу вместо нездоровой, преодоление пищевой зависимости, мужчина средних лет с похудением -15кг",
     results: "-15 кг",
     time: "8 месяцев",
     content: "Я всегда использовал еду как способ справиться со стрессом. Осознанное питание помогло мне изменить это...",
@@ -33,6 +36,7 @@ const stories = [
     author: "Мария, 29 лет",
     description: "Моя трансформация из малоподвижного образа жизни в бегуна-марафонца",
     image: "/placeholder.svg",
+    imagePrompt: "Женщина бежит марафон, от ожирения к спортивной форме, трансформация тела -30кг, бегун",
     results: "-30 кг",
     time: "18 месяцев",
     content: "Три года назад я не могла пробежать и минуты. Сегодня я финишировала свой первый марафон...",
@@ -43,6 +47,7 @@ const stories = [
     author: "Владимир, 53 года",
     description: "Как я сбросил вес и улучшил здоровье в зрелом возрасте",
     image: "/placeholder.svg",
+    imagePrompt: "Пожилой мужчина в хорошей физической форме, трансформация тела после 50 лет, похудение -25кг, здоровый образ жизни",
     results: "-25 кг",
     time: "14 месяцев",
     content: "Никогда не поздно начать заботиться о себе. В 52 года я решил изменить свою жизнь...",
@@ -80,7 +85,6 @@ const Stories = () => {
                 key={story.id}
                 title={story.title}
                 description={story.description}
-                image={story.image}
                 link={`/stories/${story.id}`}
                 className="h-full"
                 footer={
@@ -93,6 +97,13 @@ const Stories = () => {
                   </div>
                 }
               >
+                <div className="aspect-video w-full mb-4 rounded-md overflow-hidden">
+                  <AIImageGenerator 
+                    prompt={story.imagePrompt}
+                    alt={story.title}
+                    fallbackSrc={story.image}
+                  />
+                </div>
                 <p className="text-muted-foreground line-clamp-3">
                   "{story.content}"
                 </p>

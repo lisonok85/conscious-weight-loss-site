@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart, Share2 } from "lucide-react";
+import AIImageGenerator from "@/components/AIImageGenerator";
 
 // Это моковые данные, в реальном приложении вы бы загружали их с сервера
 const storiesData = [
@@ -13,6 +14,7 @@ const storiesData = [
     author: "Елена, 35 лет",
     description: "Как я потеряла 20 кг за год без диет и голодания",
     image: "/placeholder.svg",
+    imagePrompt: "Фото до и после похудения, трансформация тела, здоровый образ жизни, успешное похудение -20кг",
     results: "-20 кг",
     time: "12 месяцев",
     content: `
@@ -46,6 +48,7 @@ const storiesData = [
     author: "Александр, 42 года",
     description: "История преодоления пищевой зависимости и обретения контроля",
     image: "/placeholder.svg",
+    imagePrompt: "Человек выбирает здоровую пищу вместо нездоровой, преодоление пищевой зависимости, мужчина средних лет с похудением -15кг",
     results: "-15 кг",
     time: "8 месяцев",
     content: `
@@ -68,6 +71,7 @@ const storiesData = [
     author: "Мария, 29 лет",
     description: "Моя трансформация из малоподвижного образа жизни в бегуна-марафонца",
     image: "/placeholder.svg",
+    imagePrompt: "Женщина бежит марафон, от ожирения к спортивной форме, трансформация тела -30кг, бегун",
     results: "-30 кг",
     time: "18 месяцев",
     content: `
@@ -92,6 +96,7 @@ const storiesData = [
     author: "Владимир, 53 года",
     description: "Как я сбросил вес и улучшил здоровье в зрелом возрасте",
     image: "/placeholder.svg",
+    imagePrompt: "Пожилой мужчина в хорошей физической форме, трансформация тела после 50 лет, похудение -25кг, здоровый образ жизни",
     results: "-25 кг",
     time: "14 месяцев",
     content: `
@@ -168,10 +173,11 @@ const StoryDetail = () => {
           </div>
           
           <div className="aspect-video w-full bg-muted rounded-lg mb-8 overflow-hidden">
-            <img 
-              src={story.image} 
+            <AIImageGenerator 
+              prompt={story.imagePrompt}
               alt={story.title} 
-              className="w-full h-full object-cover"
+              className="w-full h-full"
+              fallbackSrc={story.image}
             />
           </div>
           

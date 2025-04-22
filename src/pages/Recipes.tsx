@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import AIImageGenerator from "@/components/AIImageGenerator";
 
 const recipeCategories = [
   { id: "all", label: "Все рецепты" },
@@ -21,6 +22,7 @@ const recipes = [
     title: "Овощной смузи-боул",
     description: "Питательный и низкокалорийный завтрак",
     image: "/placeholder.svg",
+    imagePrompt: "Здоровый завтрак, смузи-боул с фруктами и ягодами, фуд-фотография, яркие цвета",
     calories: 250,
     time: "15 мин",
     category: "breakfast",
@@ -30,6 +32,7 @@ const recipes = [
     title: "Запеченная курица с травами",
     description: "Богатый белком и низкоуглеводный ужин",
     image: "/placeholder.svg",
+    imagePrompt: "Запеченная куриная грудка с травами и лимоном, здоровая еда, фуд-фотография",
     calories: 320,
     time: "45 мин",
     category: "dinner",
@@ -39,6 +42,7 @@ const recipes = [
     title: "Салат с киноа и авокадо",
     description: "Полезный обед с полным набором нутриентов",
     image: "/placeholder.svg",
+    imagePrompt: "Салат с киноа, авокадо и овощами, здоровое питание, фуд-фотография",
     calories: 280,
     time: "20 мин",
     category: "lunch",
@@ -48,6 +52,7 @@ const recipes = [
     title: "Протеиновые оладьи без муки",
     description: "Идеальный завтрак для поддержания мышечной массы",
     image: "/placeholder.svg",
+    imagePrompt: "Протеиновые оладьи с ягодами, здоровый завтрак, без муки, фуд-фотография",
     calories: 310,
     time: "25 мин",
     category: "breakfast",
@@ -57,6 +62,7 @@ const recipes = [
     title: "Орехово-фруктовый батончик",
     description: "Энергетическая бомба без добавленного сахара",
     image: "/placeholder.svg",
+    imagePrompt: "Домашние энергетические батончики с орехами и сухофруктами, здоровый перекус, фуд-фотография",
     calories: 180,
     time: "10 мин",
     category: "snacks",
@@ -66,6 +72,7 @@ const recipes = [
     title: "Суп-пюре из брокколи",
     description: "Легкий и согревающий обед",
     image: "/placeholder.svg",
+    imagePrompt: "Крем-суп из брокколи, здоровое питание, фуд-фотография, зеленый цвет",
     calories: 210,
     time: "30 мин",
     category: "lunch",
@@ -120,7 +127,6 @@ const Recipes = () => {
                         key={recipe.id}
                         title={recipe.title}
                         description={recipe.description}
-                        image={recipe.image}
                         link={`/recipes/${recipe.id}`}
                         footer={
                           <div className="flex space-x-4 text-sm text-muted-foreground">
@@ -128,7 +134,15 @@ const Recipes = () => {
                             <span>{recipe.time}</span>
                           </div>
                         }
-                      />
+                      >
+                        <div className="aspect-video w-full mb-4 rounded-md overflow-hidden">
+                          <AIImageGenerator 
+                            prompt={recipe.imagePrompt}
+                            alt={recipe.title}
+                            fallbackSrc={recipe.image}
+                          />
+                        </div>
+                      </ContentCard>
                     ))}
                 </div>
               </TabsContent>

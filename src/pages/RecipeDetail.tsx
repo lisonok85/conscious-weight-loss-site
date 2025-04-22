@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart, Share2, Clock, Flame, Printer, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import AIImageGenerator from "@/components/AIImageGenerator";
 
 // Моковые данные для рецептов
 const recipesData = [
@@ -13,6 +14,7 @@ const recipesData = [
     title: "Овощной смузи-боул",
     description: "Питательный и низкокалорийный завтрак",
     image: "/placeholder.svg",
+    imagePrompt: "Здоровый завтрак, смузи-боул с фруктами и ягодами, фуд-фотография, яркие цвета",
     author: "Марина К.",
     calories: 250,
     time: "15 мин",
@@ -47,6 +49,7 @@ const recipesData = [
     title: "Запеченная курица с травами",
     description: "Богатый белком и низкоуглеводный ужин",
     image: "/placeholder.svg",
+    imagePrompt: "Запеченная куриная грудка с травами и лимоном, здоровая еда, фуд-фотография",
     author: "Алексей В.",
     calories: 320,
     time: "45 мин",
@@ -132,10 +135,11 @@ const RecipeDetail = () => {
           </div>
           
           <div className="aspect-video w-full bg-muted rounded-lg mb-8 overflow-hidden">
-            <img 
-              src={recipe.image} 
+            <AIImageGenerator 
+              prompt={recipe.imagePrompt}
               alt={recipe.title} 
-              className="w-full h-full object-cover"
+              className="w-full h-full"
+              fallbackSrc={recipe.image}
             />
           </div>
           

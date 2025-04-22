@@ -4,11 +4,13 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HeartIcon } from "lucide-react";
+import AIImageGenerator from "@/components/AIImageGenerator";
 
 const photos = [
   {
     id: 1,
     image: "/placeholder.svg",
+    imagePrompt: "До и после похудения, трансформация тела -20кг, фотография в полный рост",
     title: "Моя трансформация",
     author: "Анна К.",
     likes: 124,
@@ -17,6 +19,7 @@ const photos = [
   {
     id: 2,
     image: "/placeholder.svg",
+    imagePrompt: "Здоровый обед, белок, овощи, полезная еда, низкокалорийная, фуд-фотография",
     title: "Здоровый обед",
     author: "Максим Д.",
     likes: 89,
@@ -25,6 +28,7 @@ const photos = [
   {
     id: 3,
     image: "/placeholder.svg",
+    imagePrompt: "До и после похудения мужчины, трансформация тела -25кг, сравнение фотографий",
     title: "До и После",
     author: "Алексей П.",
     likes: 245,
@@ -33,6 +37,7 @@ const photos = [
   {
     id: 4,
     image: "/placeholder.svg",
+    imagePrompt: "Утренняя тренировка на свежем воздухе, йога, женщина занимается спортом",
     title: "Утренняя тренировка",
     author: "Ольга С.",
     likes: 56,
@@ -41,6 +46,7 @@ const photos = [
   {
     id: 5,
     image: "/placeholder.svg",
+    imagePrompt: "Низкокалорийный десерт с ягодами, здоровые сладости без сахара, фуд-фотография",
     title: "Низкокалорийный десерт",
     author: "Мария Л.",
     likes: 112,
@@ -49,6 +55,7 @@ const photos = [
   {
     id: 6,
     image: "/placeholder.svg",
+    imagePrompt: "Йога на закате, женщина в позе воина, медитация, спокойствие, природа",
     title: "Йога на закате",
     author: "Татьяна В.",
     likes: 78,
@@ -57,6 +64,7 @@ const photos = [
   {
     id: 7,
     image: "/placeholder.svg",
+    imagePrompt: "Прогресс похудения за 6 месяцев, коллаж фотографий, трансформация тела мужчины -30кг",
     title: "Мой прогресс за 6 месяцев",
     author: "Денис К.",
     likes: 193,
@@ -65,6 +73,7 @@ const photos = [
   {
     id: 8,
     image: "/placeholder.svg",
+    imagePrompt: "Белковый завтрак с яйцами и авокадо, здоровое питание, фуд-фотография",
     title: "Белковый завтрак",
     author: "Виктория З.",
     likes: 67,
@@ -117,9 +126,10 @@ const Photos = () => {
                     .filter(photo => category.id === "all" || photo.category === category.id)
                     .map((photo) => (
                       <div key={photo.id} className="group relative overflow-hidden rounded-lg">
-                        <img 
-                          src={photo.image} 
-                          alt={photo.title} 
+                        <AIImageGenerator 
+                          prompt={photo.imagePrompt}
+                          alt={photo.title}
+                          fallbackSrc={photo.image}
                           className="w-full aspect-square object-cover transition-transform group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
