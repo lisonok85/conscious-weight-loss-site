@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { LeafyGreen, Salad, Camera, User, MessageCircle, MenuIcon, X } from "lucide-react";
+import { LeafyGreen, Salad, Camera, User, MessageCircle, MenuIcon, X, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
@@ -66,6 +66,13 @@ const Navbar = () => {
                   <MessageCircle className="mr-2 size-4" /> Форум
                 </Link>
               </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/food-database" className={cn(
+                  "group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                )}>
+                  <Database className="mr-2 size-4" /> База продуктов
+                </Link>
+              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -96,6 +103,9 @@ const Navbar = () => {
             </Link>
             <Link to="/forum" className="px-4 py-2 rounded-md hover:bg-accent flex items-center" onClick={toggleMenu}>
               <MessageCircle className="mr-2 size-4" /> Форум
+            </Link>
+            <Link to="/food-database" className="px-4 py-2 rounded-md hover:bg-accent flex items-center" onClick={toggleMenu}>
+              <Database className="mr-2 size-4" /> База продуктов
             </Link>
           </div>
         </div>
