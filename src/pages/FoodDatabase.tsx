@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/pagination";
 import { 
   Database, Search, Filter, PieChart, Clock, ChevronDown, 
-  Apple, Beef, Coffee, Egg, Cheese, Fish, Wheat, 
+  Apple, Beef, Coffee, Egg, Milk, Fish, Wheat, 
   Gauge, ScrollText, Carrot
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -97,7 +97,7 @@ const FoodDatabase = () => {
     { id: "fruits", name: "Фрукты", icon: <Apple className="h-5 w-5 text-red-500" />, count: 38 },
     { id: "vegetables", name: "Овощи", icon: <Carrot className="h-5 w-5 text-orange-500" />, count: 45 },
     { id: "meat", name: "Мясо", icon: <Beef className="h-5 w-5 text-rose-700" />, count: 27 },
-    { id: "dairy", name: "Молочные продукты", icon: <Cheese className="h-5 w-5 text-yellow-500" />, count: 19 },
+    { id: "dairy", name: "Молочные продукты", icon: <Milk className="h-5 w-5 text-yellow-500" />, count: 19 },
     { id: "grains", name: "Крупы и злаки", icon: <Wheat className="h-5 w-5 text-amber-700" />, count: 23 },
     { id: "seafood", name: "Морепродукты", icon: <Fish className="h-5 w-5 text-blue-500" />, count: 16 },
     { id: "eggs", name: "Яйца", icon: <Egg className="h-5 w-5 text-yellow-400" />, count: 5 },
