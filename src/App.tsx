@@ -11,6 +11,8 @@ import Stories from "./pages/Stories";
 import Photos from "./pages/Photos";
 import StoryDetail from "./pages/StoryDetail";
 import RecipeDetail from "./pages/RecipeDetail";
+import Forum from "./pages/Forum";
+import ForumTopic from "./pages/ForumTopic";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/stories" element={<Stories />} />
           <Route path="/stories/:id" element={<StoryDetail />} />
           <Route path="/photos" element={<Photos />} />
+          <Route path="/forum" element={<Forum />} />
+          <Route path="/forum/:id" element={<ForumTopic />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
