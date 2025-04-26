@@ -1,12 +1,36 @@
 
+import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContentCard from "@/components/ContentCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AIImageGenerator from "@/components/AIImageGenerator";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter 
+} from "@/components/ui/dialog";
+import { 
+  Form, 
+  FormControl, 
+  FormDescription, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 
 const recipeCategories = [
   { id: "all", label: "Все рецепты" },
@@ -79,7 +103,77 @@ const recipes = [
   },
 ];
 
+// Схема валидации для формы добавления рецепта
+const recipeFormSchema = z.object({
+  title: z.string().min(3, "Название должно содержать минимум 3 символа").max(100, "Слишком длинное название"),
+  description: z.string().min(10, "Описание должно содержать минимум 10 символов").max(500, "Слишком длинное описание"),
+  ingredients: z.string().min(10, "Ингредиенты должны содержать минимум 10 символов"),
+  instructions: z.string().min(10, "Инструкции должны содержать минимум 10 символов"),
+  category: z.string().min(1, "Выберите категорию"),
+  calories: z.string().min(1, "Укажите калорийность"),
+  time: z.string().min(1, "Укажите время приготовления"),
+  imagePrompt: z.string().min(10, "Описание для генерации изображения должно содержать минимум 10 символов"),
+});
+
+type RecipeFormValues = z.infer<typeof recipeFormSchema>;
+
 const Recipes = () => {
+  const [isAddRecipeOpen, setIsAddRecipeOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [recipesList, setRecipesList] = useState(recipes);
+  const { toast } = useToast();
+
+  // Инициализация формы
+  const form = useForm<RecipeFormValues>({
+    resolver: zodResolver(recipeFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      ingredients: "",
+      instructions: "",
+      category: "",
+      calories: "",
+      time: "",
+      imagePrompt: "",
+    },
+  });
+
+  // Обработка отправки формы
+  const onSubmit = (data: RecipeFormValues) => {
+    // Создаем новый рецепт
+    const newRecipe = {
+      id: recipesList.length + 1,
+      title: data.title,
+      description: data.description,
+      image: "/placeholder.svg",
+      imagePrompt: data.imagePrompt,
+      calories: parseInt(data.calories),
+      time: data.time,
+      category: data.category,
+      ingredients: data.ingredients,
+      instructions: data.instructions,
+    };
+
+    // Добавляем рецепт в список
+    setRecipesList([...recipesList, newRecipe]);
+    
+    // Закрываем диалог и сбрасываем форму
+    setIsAddRecipeOpen(false);
+    form.reset();
+    
+    // Показываем уведомление об успехе
+    toast({
+      title: "Рецепт добавлен!",
+      description: "Ваш рецепт успешно опубликован на сайте",
+    });
+  };
+
+  // Фильтрация рецептов по поисковому запросу
+  const filteredRecipes = recipesList.filter(recipe => 
+    recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    recipe.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -99,9 +193,16 @@ const Recipes = () => {
               <Input 
                 placeholder="Поиск рецептов..." 
                 className="pl-10 w-full md:w-[300px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button className="bg-primary">Добавить рецепт</Button>
+            <Button 
+              className="bg-primary" 
+              onClick={() => setIsAddRecipeOpen(true)}
+            >
+              Добавить рецепт
+            </Button>
           </div>
 
           <Tabs defaultValue="all">
@@ -120,7 +221,7 @@ const Recipes = () => {
             {recipeCategories.map((category) => (
               <TabsContent key={category.id} value={category.id}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {recipes
+                  {filteredRecipes
                     .filter(recipe => category.id === "all" || recipe.category === category.id)
                     .map((recipe) => (
                       <ContentCard
@@ -151,6 +252,183 @@ const Recipes = () => {
         </div>
       </main>
       <Footer />
+
+      {/* Диалог добавления рецепта */}
+      <Dialog open={isAddRecipeOpen} onOpenChange={setIsAddRecipeOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Добавить новый рецепт</DialogTitle>
+            <DialogDescription>
+              Поделитесь своим полезным рецептом с сообществом любителей здорового питания
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Название рецепта</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Например: Запеченный лосось с авокадо" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Краткое описание</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Опишите рецепт в нескольких предложениях"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Категория</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите категорию" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="breakfast">Завтраки</SelectItem>
+                          <SelectItem value="lunch">Обеды</SelectItem>
+                          <SelectItem value="dinner">Ужины</SelectItem>
+                          <SelectItem value="snacks">Перекусы</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="calories"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Калории</FormLabel>
+                        <FormControl>
+                          <Input placeholder="ккал" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Время</FormLabel>
+                        <FormControl>
+                          <Input placeholder="30 мин" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="ingredients"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ингредиенты</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Перечислите все ингредиенты, по одному на строку"
+                        className="min-h-[120px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Укажите количество каждого ингредиента.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="instructions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Инструкции по приготовлению</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Подробно опишите процесс приготовления, шаг за шагом"
+                        className="min-h-[150px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="imagePrompt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Описание для изображения</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Опишите, как должно выглядеть готовое блюдо для ИИ-генерации изображения"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Подробное описание поможет ИИ сгенерировать красивое изображение вашего блюда
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsAddRecipeOpen(false)}
+                  className="mr-2"
+                >
+                  Отмена
+                </Button>
+                <Button type="submit">Опубликовать рецепт</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
