@@ -31,6 +31,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { FileInput } from "@/components/ui/file-input";
 
 const recipeCategories = [
   { id: "all", label: "Все рецепты" },
@@ -113,6 +114,7 @@ const recipeFormSchema = z.object({
   calories: z.string().min(1, "Укажите калорийность"),
   time: z.string().min(1, "Укажите время приготовления"),
   imagePrompt: z.string().min(10, "Описание для генерации изображения должно содержать минимум 10 символов"),
+  photos: z.array(z.instanceof(File)).optional(),
 });
 
 type RecipeFormValues = z.infer<typeof recipeFormSchema>;
@@ -135,6 +137,7 @@ const Recipes = () => {
       calories: "",
       time: "",
       imagePrompt: "",
+      photos: [],
     },
   });
 
@@ -145,13 +148,16 @@ const Recipes = () => {
       id: recipesList.length + 1,
       title: data.title,
       description: data.description,
-      image: "/placeholder.svg",
+      image: data.photos && data.photos.length > 0 
+        ? URL.createObjectURL(data.photos[0]) 
+        : "/placeholder.svg",
       imagePrompt: data.imagePrompt,
       calories: parseInt(data.calories),
       time: data.time,
       category: data.category,
       ingredients: data.ingredients,
       instructions: data.instructions,
+      photos: data.photos ? Array.from(data.photos).map(file => URL.createObjectURL(file)) : [],
     };
 
     // Добавляем рецепт в список
@@ -237,11 +243,19 @@ const Recipes = () => {
                         }
                       >
                         <div className="aspect-video w-full mb-4 rounded-md overflow-hidden">
-                          <AIImageGenerator 
-                            prompt={recipe.imagePrompt}
-                            alt={recipe.title}
-                            fallbackSrc={recipe.image}
-                          />
+                          {recipe.photos && recipe.photos.length > 0 ? (
+                            <img 
+                              src={recipe.photos[0]} 
+                              alt={recipe.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <AIImageGenerator 
+                              prompt={recipe.imagePrompt}
+                              alt={recipe.title}
+                              fallbackSrc={recipe.image}
+                            />
+                          )}
                         </div>
                       </ContentCard>
                     ))}
@@ -357,6 +371,30 @@ const Recipes = () => {
               
               <FormField
                 control={form.control}
+                name="photos"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Фотографии блюда</FormLabel>
+                    <FormControl>
+                      <FileInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        multiple={true}
+                        maxSize={10}
+                        accept="image/*"
+                        label="Загрузите фото вашего блюда или перетащите их сюда"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Добавьте до 5 фотографий вашего блюда. Максимальный размер файла: 10MB.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
                 name="ingredients"
                 render={({ field }) => (
                   <FormItem>
@@ -399,15 +437,15 @@ const Recipes = () => {
                 name="imagePrompt"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Описание для изображения</FormLabel>
+                    <FormLabel>Описание для генерации изображения</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Опишите, как должно выглядеть готовое блюдо для ИИ-генерации изображения"
+                        placeholder="Опишите, как должно выглядеть готовое блюдо для ИИ-генерации изображения (если не загружаете своё фото)"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      Подробное описание поможет ИИ сгенерировать красивое изображение вашего блюда
+                      Если вы не загружаете собственное фото, подробное описание поможет ИИ сгенерировать изображение вашего блюда
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
