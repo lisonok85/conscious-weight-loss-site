@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContentCard from "@/components/ContentCard";
@@ -6,8 +7,32 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AIImageGenerator from "@/components/AIImageGenerator";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { FileInput } from "@/components/ui/file-input";
+import { useToast } from "@/components/ui/use-toast";
 
-const stories = [
+interface Story {
+  id: number;
+  title: string;
+  author: string;
+  description: string;
+  image: string;
+  imagePrompt: string;
+  results: string;
+  time: string;
+  content: string;
+}
+
+const initialStories = [
   {
     id: 1,
     title: "Мой путь к здоровому образу жизни",
@@ -55,6 +80,72 @@ const stories = [
 ];
 
 const Stories = () => {
+  const [stories, setStories] = useState<Story[]>(initialStories);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Состояние для формы
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [description, setDescription] = useState("");
+  const [content, setContent] = useState("");
+  const [results, setResults] = useState("");
+  const [timePeriod, setTimePeriod] = useState("");
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [photos, setPhotos] = useState<File[]>([]);
+  
+  const { toast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Создаем новую историю
+    const newStory: Story = {
+      id: stories.length + 1,
+      title,
+      author,
+      description,
+      image: photos.length > 0 ? URL.createObjectURL(photos[0]) : "/placeholder.svg",
+      imagePrompt,
+      results,
+      time: timePeriod,
+      content,
+    };
+    
+    // Добавляем новую историю в список
+    setStories([...stories, newStory]);
+    
+    // Сбрасываем форму
+    resetForm();
+    
+    // Закрываем диалог
+    setIsDialogOpen(false);
+    
+    // Показываем уведомление
+    toast({
+      title: "История успеха добавлена!",
+      description: "Ваша история успешно опубликована. Спасибо за то, что поделились своим опытом!",
+    });
+  };
+  
+  const resetForm = () => {
+    setTitle("");
+    setAuthor("");
+    setDescription("");
+    setContent("");
+    setResults("");
+    setTimePeriod("");
+    setImagePrompt("");
+    setPhotos([]);
+  };
+  
+  // Фильтрация историй по поисковому запросу
+  const filteredStories = stories.filter(story => 
+    story.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    story.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    story.author.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -74,13 +165,20 @@ const Stories = () => {
               <Input 
                 placeholder="Поиск историй..." 
                 className="pl-10 w-full md:w-[300px]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button className="bg-primary">Поделиться своей историей</Button>
+            <Button 
+              className="bg-primary"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              Поделиться своей историей
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {stories.map((story) => (
+            {filteredStories.map((story) => (
               <ContentCard
                 key={story.id}
                 title={story.title}
@@ -98,11 +196,19 @@ const Stories = () => {
                 }
               >
                 <div className="aspect-video w-full mb-4 rounded-md overflow-hidden">
-                  <AIImageGenerator 
-                    prompt={story.imagePrompt}
-                    alt={story.title}
-                    fallbackSrc={story.image}
-                  />
+                  {story.image.startsWith("blob:") ? (
+                    <img 
+                      src={story.image} 
+                      alt={story.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <AIImageGenerator 
+                      prompt={story.imagePrompt}
+                      alt={story.title}
+                      fallbackSrc={story.image}
+                    />
+                  )}
                 </div>
                 <p className="text-muted-foreground line-clamp-3">
                   "{story.content}"
@@ -112,6 +218,128 @@ const Stories = () => {
           </div>
         </div>
       </main>
+      
+      {/* Диалог для добавления истории успеха */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Поделитесь своей историей успеха</DialogTitle>
+            <DialogDescription>
+              Расскажите о своем пути к здоровому образу жизни и вдохновите других!
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmit} className="space-y-6 py-4">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Заголовок истории</Label>
+                <Input 
+                  id="title" 
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Например: Мой путь к здоровому образу жизни" 
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="author">Автор</Label>
+                <Input 
+                  id="author" 
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  placeholder="Имя, возраст (например: Анна, 34 года)" 
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="description">Краткое описание</Label>
+                <Input 
+                  id="description" 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Одно предложение, описывающее вашу историю" 
+                  required
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="results">Результаты</Label>
+                  <Input 
+                    id="results" 
+                    value={results}
+                    onChange={(e) => setResults(e.target.value)}
+                    placeholder="Например: -15 кг" 
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="timePeriod">Период времени</Label>
+                  <Input 
+                    id="timePeriod" 
+                    value={timePeriod}
+                    onChange={(e) => setTimePeriod(e.target.value)}
+                    placeholder="Например: 6 месяцев" 
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="photos">Фотографии (до/после)</Label>
+                <FileInput
+                  onChange={setPhotos}
+                  value={photos}
+                  multiple={true}
+                  accept="image/*"
+                  maxSize={5}
+                  label="Загрузите фотографии до и после"
+                />
+              </div>
+              
+              {photos.length === 0 && (
+                <div>
+                  <Label htmlFor="imagePrompt">Описание для ИИ-генерации изображения</Label>
+                  <Textarea 
+                    id="imagePrompt" 
+                    value={imagePrompt}
+                    onChange={(e) => setImagePrompt(e.target.value)}
+                    placeholder="Опишите ваше преображение для генерации изображения ИИ (если не загружаете фото)"
+                    className="resize-none"
+                    rows={3}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Если вы не загружаете фотографии, мы сгенерируем изображение на основе вашего описания
+                  </p>
+                </div>
+              )}
+              
+              <div>
+                <Label htmlFor="content">Ваша история</Label>
+                <Textarea 
+                  id="content" 
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Расскажите подробно о вашем пути, что помогло достичь результата, с какими трудностями вы столкнулись и как их преодолели..."
+                  className="resize-none"
+                  rows={10}
+                  required
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
+                Отмена
+              </Button>
+              <Button type="submit">Опубликовать историю</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      
       <Footer />
     </div>
   );
