@@ -19,9 +19,9 @@ import ForumTopic from "./pages/ForumTopic";
 import FoodDatabase from "./pages/FoodDatabase";
 import ResetPassword from "./pages/ResetPassword";
 
+// Создаем экземпляр QueryClient
+const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
