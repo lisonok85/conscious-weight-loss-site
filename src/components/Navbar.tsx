@@ -1,7 +1,8 @@
 
 import { Link } from "react-router-dom";
-import { LeafyGreen, Salad, Camera, User, MessageCircle, MenuIcon, X, Database } from "lucide-react";
+import { LeafyGreen, Salad, Camera, User, MessageCircle, MenuIcon, X, Database, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
 import { useState } from "react";
 import {
   NavigationMenu,

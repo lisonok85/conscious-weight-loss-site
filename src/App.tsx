@@ -11,9 +11,10 @@ import Stories from "./pages/Stories";
 import Photos from "./pages/Photos";
 import StoryDetail from "./pages/StoryDetail";
 import RecipeDetail from "./pages/RecipeDetail";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
 import Forum from "./pages/Forum";
-import ForumTopic from "./pages/ForumTopic";
-import FoodDatabase from "./pages/FoodDatabase";
 
 const queryClient = new QueryClient();
 
