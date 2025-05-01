@@ -15,8 +15,10 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Forum from "./pages/Forum";
+import ForumTopic from "./pages/ForumTopic";
+import FoodDatabase from "./pages/FoodDatabase";
+import ResetPassword from "./pages/ResetPassword";
 
-const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
