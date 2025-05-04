@@ -35,11 +35,21 @@ import {
   CheckCircle2,
   Calendar,
   Edit,
-  Trash2
+  Trash2,
+  Plus,
+  X
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 
 // Тип для записи о весе
 interface WeightRecord {
@@ -64,9 +74,18 @@ interface FoodRecord {
   id: string;
   date: string;
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  foods: { name: string; calories: number; amount: string }[];
+  foods: { name: string; calories: number; amount: string; weight: number }[];
   calories: number;
+  totalWeight: number;
   note?: string;
+}
+
+// Тип для продукта питания
+interface FoodItem {
+  name: string;
+  calories: number;
+  amount: string;
+  weight: number;
 }
 
 const Profile = () => {
@@ -135,10 +154,11 @@ const Profile = () => {
       date: '2025-05-03',
       mealType: 'breakfast',
       foods: [
-        { name: 'Овсянка', calories: 150, amount: '100г' },
-        { name: 'Яблоко', calories: 52, amount: '1 шт' }
+        { name: 'Овсянка', calories: 150, amount: '100г', weight: 100 },
+        { name: 'Яблоко', calories: 52, amount: '1 шт', weight: 150 }
       ],
       calories: 202,
+      totalWeight: 250,
       note: 'Хороший завтрак'
     },
     {
@@ -146,20 +166,26 @@ const Profile = () => {
       date: '2025-05-03',
       mealType: 'lunch',
       foods: [
-        { name: 'Куриная грудка', calories: 165, amount: '100г' },
-        { name: 'Рис бурый', calories: 111, amount: '100г' },
-        { name: 'Овощной салат', calories: 45, amount: '100г' }
+        { name: 'Куриная грудка', calories: 165, amount: '100г', weight: 100 },
+        { name: 'Рис бурый', calories: 111, amount: '100г', weight: 100 },
+        { name: 'Овощной салат', calories: 45, amount: '100г', weight: 100 }
       ],
       calories: 321,
+      totalWeight: 300,
       note: ''
     }
   ]);
-  const [newFoodRecord, setNewFoodRecord] = useState<Partial<FoodRecord>>({
-    date: new Date().toISOString().split('T')[0],
-    mealType: 'breakfast',
-    foods: []
-  });
-  const [newFoodItem, setNewFoodItem] = useState({ name: '', calories: '', amount: '' });
+  
+  // Состояние диалога добавления приема пищи
+  const [showAddMealDialog, setShowAddMealDialog] = useState(false);
+  
+  // Состояния для новой записи в дневнике питания
+  const [newMealType, setNewMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('breakfast');
+  const [newMealDate, setNewMealDate] = useState(new Date().toISOString().split('T')[0]);
+  const [newMealNote, setNewMealNote] = useState('');
+  const [newFoodItems, setNewFoodItems] = useState<FoodItem[]>([
+    { name: '', calories: 0, amount: '', weight: 0 }
+  ]);
   
   const handleLogout = () => {
     logout();
@@ -263,6 +289,90 @@ const Profile = () => {
     });
   };
   
+  // Функция для обновления значения продукта в новой записи
+  const handleFoodItemChange = (index: number, field: keyof FoodItem, value: string) => {
+    const updatedItems = [...newFoodItems];
+    
+    if (field === 'calories' || field === 'weight') {
+      updatedItems[index][field] = value === '' ? 0 : parseInt(value, 10);
+    } else {
+      updatedItems[index][field] = value;
+    }
+    
+    setNewFoodItems(updatedItems);
+  };
+  
+  // Функция для добавления нового продукта в запись
+  const handleAddFoodItem = () => {
+    setNewFoodItems([
+      ...newFoodItems, 
+      { name: '', calories: 0, amount: '', weight: 0 }
+    ]);
+  };
+  
+  // Функция для удаления продукта из записи
+  const handleRemoveFoodItem = (index: number) => {
+    if (newFoodItems.length > 1) {
+      const updatedItems = [...newFoodItems];
+      updatedItems.splice(index, 1);
+      setNewFoodItems(updatedItems);
+    }
+  };
+  
+  // Функция для создания новой записи в дневнике питания
+  const handleAddMeal = () => {
+    // Проверка наличия продуктов
+    if (newFoodItems.some(item => !item.name || item.calories <= 0 || !item.amount || item.weight <= 0)) {
+      toast({
+        title: "Ошибка",
+        description: "Заполните все поля для каждого продукта",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Подсчет общего количества калорий и веса
+    const totalCalories = newFoodItems.reduce((sum, item) => sum + item.calories, 0);
+    const totalWeight = newFoodItems.reduce((sum, item) => sum + item.weight, 0);
+    
+    // Создание новой записи
+    const newRecord: FoodRecord = {
+      id: Date.now().toString(),
+      date: newMealDate,
+      mealType: newMealType,
+      foods: [...newFoodItems],
+      calories: totalCalories,
+      totalWeight: totalWeight,
+      note: newMealNote
+    };
+    
+    // Добавление записи
+    setFoodRecords([...foodRecords, newRecord]);
+    
+    // Сброс полей формы
+    setNewMealType('breakfast');
+    setNewMealDate(new Date().toISOString().split('T')[0]);
+    setNewMealNote('');
+    setNewFoodItems([{ name: '', calories: 0, amount: '', weight: 0 }]);
+    
+    // Закрытие диалога
+    setShowAddMealDialog(false);
+    
+    toast({
+      title: "Прием пищи добавлен",
+      description: `Запись успешно добавлена в дневник питания`,
+    });
+  };
+  
+  // Функция для удаления приема пищи
+  const handleDeleteMeal = (id: string) => {
+    setFoodRecords(foodRecords.filter(record => record.id !== id));
+    toast({
+      title: "Запись удалена",
+      description: "Прием пищи был удален из дневника",
+    });
+  };
+  
   // Получаем инициалы для аватара
   const getInitials = () => {
     if (!user?.name) return 'U';
@@ -296,6 +406,11 @@ const Profile = () => {
   const todayCalories = foodRecords
     .filter(record => record.date === today)
     .reduce((sum, record) => sum + record.calories, 0);
+    
+  // Вычисление общего веса съеденного за сегодня
+  const todayTotalWeight = foodRecords
+    .filter(record => record.date === today)
+    .reduce((sum, record) => sum + record.totalWeight, 0);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -598,7 +713,10 @@ const Profile = () => {
                         <div className="bg-muted rounded-lg p-4">
                           <h3 className="text-sm font-semibold mb-1">Сегодня потреблено</h3>
                           <p className="text-2xl font-bold">{todayCalories} ккал</p>
-                          <p className="text-xs text-muted-foreground">Цель: 2000 ккал</p>
+                          <div className="flex justify-between items-center">
+                            <p className="text-xs text-muted-foreground">Цель: 2000 ккал</p>
+                            <p className="text-xs font-medium">Вес: {todayTotalWeight} г</p>
+                          </div>
                           <Progress 
                             value={(todayCalories / 2000) * 100} 
                             className="mt-2" 
@@ -626,16 +744,18 @@ const Profile = () => {
                                           {record.mealType === 'snack' && 'Перекус'}
                                         </h4>
                                         <Badge className="ml-2">{record.calories} ккал</Badge>
+                                        <Badge variant="outline" className="ml-2">{record.totalWeight} г</Badge>
                                       </div>
-                                      <p className="text-sm text-muted-foreground">
+                                      <p className="text-sm text-muted-foreground mt-1">
                                         {record.foods.map(food => food.name).join(', ')}
                                       </p>
                                     </div>
                                     <div className="flex">
-                                      <Button variant="ghost" size="icon">
-                                        <Edit className="h-4 w-4" />
-                                      </Button>
-                                      <Button variant="ghost" size="icon">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon"
+                                        onClick={() => handleDeleteMeal(record.id)}
+                                      >
                                         <Trash2 className="h-4 w-4" />
                                       </Button>
                                     </div>
@@ -649,46 +769,9 @@ const Profile = () => {
                           </div>
                         )}
                       </div>
-                      
-                      <Separator className="my-4" />
-                      
-                      <div>
-                        <h3 className="text-sm font-medium mb-3">Добавить прием пищи</h3>
-                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                          <div className="space-y-2">
-                            <Label htmlFor="meal-type">Тип приема пищи</Label>
-                            <select 
-                              id="meal-type"
-                              className="w-full border rounded-md p-2"
-                              value={newFoodRecord.mealType}
-                              onChange={(e) => setNewFoodRecord({
-                                ...newFoodRecord,
-                                mealType: e.target.value as any
-                              })}
-                            >
-                              <option value="breakfast">Завтрак</option>
-                              <option value="lunch">Обед</option>
-                              <option value="dinner">Ужин</option>
-                              <option value="snack">Перекус</option>
-                            </select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="meal-date">Дата</Label>
-                            <Input 
-                              id="meal-date"
-                              type="date"
-                              value={newFoodRecord.date || ''}
-                              onChange={(e) => setNewFoodRecord({
-                                ...newFoodRecord,
-                                date: e.target.value
-                              })}
-                            />
-                          </div>
-                        </div>
-                      </div>
                     </CardContent>
                     <CardFooter>
-                      <Button>
+                      <Button onClick={() => setShowAddMealDialog(true)}>
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Добавить прием пищи
                       </Button>
@@ -885,6 +968,119 @@ const Profile = () => {
         </div>
       </main>
       <Footer />
+      
+      {/* Диалог добавления приема пищи */}
+      <Dialog open={showAddMealDialog} onOpenChange={setShowAddMealDialog}>
+        <DialogContent className="max-w-md md:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Добавить прием пищи</DialogTitle>
+            <DialogDescription>
+              Запишите что вы съели и получите подсчет калорий и веса
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="meal-type">Тип приема пищи</Label>
+                <select 
+                  id="meal-type"
+                  className="w-full border rounded-md p-2"
+                  value={newMealType}
+                  onChange={(e) => setNewMealType(e.target.value as any)}
+                >
+                  <option value="breakfast">Завтрак</option>
+                  <option value="lunch">Обед</option>
+                  <option value="dinner">Ужин</option>
+                  <option value="snack">Перекус</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="meal-date">Дата</Label>
+                <Input 
+                  id="meal-date"
+                  type="date"
+                  value={newMealDate}
+                  onChange={(e) => setNewMealDate(e.target.value)}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="flex items-center justify-between">
+                Продукты
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleAddFoodItem}
+                  type="button"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Добавить продукт
+                </Button>
+              </Label>
+              
+              <div className="space-y-3">
+                {newFoodItems.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input
+                      placeholder="Название продукта"
+                      value={item.name}
+                      onChange={(e) => handleFoodItemChange(index, 'name', e.target.value)}
+                      className="flex-1"
+                    />
+                    <Input
+                      placeholder="Ккал"
+                      type="number"
+                      value={item.calories || ''}
+                      onChange={(e) => handleFoodItemChange(index, 'calories', e.target.value)}
+                      className="w-20"
+                    />
+                    <Input
+                      placeholder="100г"
+                      value={item.amount}
+                      onChange={(e) => handleFoodItemChange(index, 'amount', e.target.value)}
+                      className="w-20"
+                    />
+                    <Input
+                      placeholder="Вес (г)"
+                      type="number"
+                      value={item.weight || ''}
+                      onChange={(e) => handleFoodItemChange(index, 'weight', e.target.value)}
+                      className="w-24"
+                    />
+                    {newFoodItems.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveFoodItem(index)}
+                        type="button"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="meal-note">Примечание (необязательно)</Label>
+              <Textarea 
+                id="meal-note"
+                placeholder="Например: Был очень голоден"
+                value={newMealNote}
+                onChange={(e) => setNewMealNote(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddMealDialog(false)}>Отмена</Button>
+            <Button onClick={handleAddMeal}>Добавить</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
