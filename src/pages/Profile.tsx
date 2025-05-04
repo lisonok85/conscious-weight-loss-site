@@ -10,7 +10,20 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Settings, LogOut, Save } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  User, 
+  Settings, 
+  LogOut, 
+  Save,
+  Bell,
+  Lock,
+  Shield,
+  EyeOff,
+  Eye
+} from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const Profile = () => {
@@ -18,8 +31,22 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  // Состояния для профиля
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
+  
+  // Состояния для настроек
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [systemNotifications, setSystemNotifications] = useState(true);
+  const [profilePrivate, setProfilePrivate] = useState(false);
+  const [hideActivity, setHideActivity] = useState(false);
+  
+  // Состояния для смены пароля
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   
   const handleLogout = () => {
     logout();
@@ -36,6 +63,54 @@ const Profile = () => {
       title: "Профиль обновлен",
       description: "Ваши данные были успешно сохранены",
     });
+  };
+
+  const handleSaveNotificationSettings = () => {
+    // В реальном приложении тут был бы запрос к API
+    toast({
+      title: "Настройки уведомлений сохранены",
+      description: "Ваши предпочтения по уведомлениям были обновлены",
+    });
+  };
+
+  const handleSavePrivacySettings = () => {
+    // В реальном приложении тут был бы запрос к API
+    toast({
+      title: "Настройки приватности сохранены",
+      description: "Ваши настройки приватности были обновлены",
+    });
+  };
+
+  const handleChangePassword = () => {
+    // Валидация
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, заполните все поля",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Ошибка",
+        description: "Новый пароль и подтверждение не совпадают",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // В реальном приложении тут был бы запрос к API
+    toast({
+      title: "Пароль изменен",
+      description: "Ваш пароль был успешно обновлен",
+    });
+
+    // Очистка полей
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
   };
   
   // Получаем инициалы для аватара
@@ -127,19 +202,186 @@ const Profile = () => {
                 
                 {/* Вкладка настроек */}
                 <TabsContent value="settings">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Настройки аккаунта</CardTitle>
-                      <CardDescription>
-                        Управляйте настройками вашего аккаунта
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground">
-                        Настройки будут доступны в следующих обновлениях.
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-6">
+                    {/* Настройки уведомлений */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Bell className="mr-2 h-5 w-5" />
+                          Настройки уведомлений
+                        </CardTitle>
+                        <CardDescription>
+                          Управляйте тем, как вы получаете уведомления
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="email-notifications">Email уведомления</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Получать уведомления на email
+                            </p>
+                          </div>
+                          <Switch
+                            id="email-notifications"
+                            checked={emailNotifications}
+                            onCheckedChange={setEmailNotifications}
+                          />
+                        </div>
+                        
+                        <Separator className="my-4" />
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="system-notifications">Системные уведомления</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Показывать уведомления в приложении
+                            </p>
+                          </div>
+                          <Switch
+                            id="system-notifications"
+                            checked={systemNotifications}
+                            onCheckedChange={setSystemNotifications}
+                          />
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button onClick={handleSaveNotificationSettings}>
+                          <Save className="mr-2 h-4 w-4" />
+                          Сохранить настройки
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                    
+                    {/* Настройки приватности */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Shield className="mr-2 h-5 w-5" />
+                          Приватность
+                        </CardTitle>
+                        <CardDescription>
+                          Настройте видимость вашего профиля для других пользователей
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="private-profile">Приватный профиль</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Скрыть ваш профиль от других пользователей
+                            </p>
+                          </div>
+                          <Switch
+                            id="private-profile"
+                            checked={profilePrivate}
+                            onCheckedChange={setProfilePrivate}
+                          />
+                        </div>
+                        
+                        <Separator className="my-4" />
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="hide-activity">Скрыть активность</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Скрыть вашу активность на форуме и в комментариях
+                            </p>
+                          </div>
+                          <Switch
+                            id="hide-activity"
+                            checked={hideActivity}
+                            onCheckedChange={setHideActivity}
+                          />
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button onClick={handleSavePrivacySettings}>
+                          <Save className="mr-2 h-4 w-4" />
+                          Сохранить настройки
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                    
+                    {/* Смена пароля */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Lock className="mr-2 h-5 w-5" />
+                          Изменение пароля
+                        </CardTitle>
+                        <CardDescription>
+                          Обновите ваш пароль для повышения безопасности
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <Alert className="bg-muted">
+                          <AlertDescription>
+                            Рекомендуется периодически менять пароль для обеспечения безопасности вашего аккаунта
+                          </AlertDescription>
+                        </Alert>
+                        
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="current-password">Текущий пароль</Label>
+                            <div className="relative">
+                              <Input 
+                                id="current-password"
+                                type={showCurrentPassword ? "text" : "password"}
+                                placeholder="Введите текущий пароль"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                              />
+                              <button 
+                                type="button" 
+                                className="absolute right-3 top-2.5 text-muted-foreground"
+                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              >
+                                {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="new-password">Новый пароль</Label>
+                            <div className="relative">
+                              <Input 
+                                id="new-password"
+                                type={showNewPassword ? "text" : "password"}
+                                placeholder="Введите новый пароль"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                              />
+                              <button 
+                                type="button" 
+                                className="absolute right-3 top-2.5 text-muted-foreground"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                              >
+                                {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="confirm-password">Подтверждение пароля</Label>
+                            <Input 
+                              id="confirm-password"
+                              type="password"
+                              placeholder="Подтвердите новый пароль"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button onClick={handleChangePassword}>
+                          <Save className="mr-2 h-4 w-4" />
+                          Изменить пароль
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
