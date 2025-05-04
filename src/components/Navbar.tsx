@@ -1,22 +1,37 @@
 
-import { Link } from "react-router-dom";
-import { LeafyGreen, Salad, Camera, User, MessageCircle, MenuIcon, X, Database, LogIn, UserPlus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { LeafyGreen, Salad, Camera, User, MessageCircle, MenuIcon, X, Database, LogIn, UserPlus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import { useState } from "react";
 import {
   NavigationMenu,
   NavigationMenuList,
   NavigationMenuItem,
-  NavigationMenuLink,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  // Получаем инициалы для аватара
+  const getInitials = () => {
+    if (!user?.name) return 'U';
+    return user.name.charAt(0).toUpperCase();
   };
 
   return (
@@ -80,18 +95,44 @@ const Navbar = () => {
 
         {/* Auth Buttons - Desktop */}
         <div className="hidden md:flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/login" className="flex items-center gap-1">
-              <LogIn className="size-4" />
-              <span>Вход</span>
-            </Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link to="/register" className="flex items-center gap-1">
-              <UserPlus className="size-4" />
-              <span>Регистрация</span>
-            </Link>
-          </Button>
+          {isAuthenticated ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.avatar} alt={user?.name} />
+                    <AvatarFallback>{getInitials()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="font-medium">{user?.name}</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile">Личный кабинет</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Выйти</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/login" className="flex items-center gap-1">
+                  <LogIn className="size-4" />
+                  <span>Вход</span>
+                </Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/register" className="flex items-center gap-1">
+                  <UserPlus className="size-4" />
+                  <span>Регистрация</span>
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -125,20 +166,32 @@ const Navbar = () => {
               <Database className="mr-2 size-4" /> База продуктов
             </Link>
             <div className="border-t border-border my-2"></div>
-            <Link to="/login" className="px-4 py-2 rounded-md hover:bg-accent flex items-center" onClick={toggleMenu}>
-              <LogIn className="mr-2 size-4" /> Вход
-            </Link>
-            <Link to="/profile" className="px-4 py-2 rounded-md hover:bg-accent flex items-center" onClick={toggleMenu}>
-              <User className="mr-2 size-4" /> Личный кабинет
-            </Link>
-            <div className="pt-2">
-              <Button asChild className="w-full" size="sm">
-                <Link to="/register" className="flex items-center justify-center gap-1" onClick={toggleMenu}>
-                  <UserPlus className="size-4" />
-                  <span>Регистрация</span>
+            
+            {isAuthenticated ? (
+              <>
+                <Link to="/profile" className="px-4 py-2 rounded-md hover:bg-accent flex items-center" onClick={toggleMenu}>
+                  <User className="mr-2 size-4" /> Личный кабинет
                 </Link>
-              </Button>
-            </div>
+                <Button variant="outline" className="mt-2" onClick={() => { handleLogout(); toggleMenu(); }}>
+                  <LogOut className="mr-2 size-4" />
+                  Выйти
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="px-4 py-2 rounded-md hover:bg-accent flex items-center" onClick={toggleMenu}>
+                  <LogIn className="mr-2 size-4" /> Вход
+                </Link>
+                <div className="pt-2">
+                  <Button asChild className="w-full" size="sm">
+                    <Link to="/register" className="flex items-center justify-center gap-1" onClick={toggleMenu}>
+                      <UserPlus className="size-4" />
+                      <span>Регистрация</span>
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

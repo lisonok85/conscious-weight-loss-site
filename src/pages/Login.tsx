@@ -14,6 +14,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useAuth } from "@/context/AuthContext";
 
 // Схема валидации формы входа
 const loginSchema = z.object({
@@ -28,6 +29,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -38,25 +40,24 @@ const Login = () => {
     }
   });
 
-  const onSubmit = (values: LoginFormValues) => {
-    // В реальном приложении здесь будет API-запрос для аутентификации
-    console.log("Форма входа отправлена:", values);
-    
-    // Имитация успешного входа
-    localStorage.setItem("user", JSON.stringify({
-      id: "user_123",
-      name: "Пользователь",
-      email: values.email,
-      isLoggedIn: true
-    }));
-    
-    toast({
-      title: "Успешный вход",
-      description: "Добро пожаловать в ваш личный кабинет!",
-    });
-    
-    // Перенаправление в личный кабинет
-    navigate("/profile");
+  const onSubmit = async (values: LoginFormValues) => {
+    try {
+      await login(values.email, values.password);
+      
+      toast({
+        title: "Успешный вход",
+        description: "Добро пожаловать в ваш личный кабинет!",
+      });
+      
+      // Перенаправление в личный кабинет
+      navigate("/profile");
+    } catch (error) {
+      toast({
+        title: "Ошибка входа",
+        description: "Неверный email или пароль. Пожалуйста, попробуйте снова.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
