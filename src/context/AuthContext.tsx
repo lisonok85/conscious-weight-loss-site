@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Тип для представления пользователя
@@ -7,6 +6,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  role?: 'user' | 'admin';  // Добавлено поле роли
   isLoggedIn: boolean;
 }
 
@@ -63,11 +63,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Имитация задержки запроса
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Эмуляция входа администратора
+    const isAdmin = email.includes('admin');
+    
     // Создаем тестового пользователя
     const newUser: User = {
       id: "user_" + Math.random().toString(36).substr(2, 9),
       name: email.split('@')[0],
       email: email,
+      role: isAdmin ? 'admin' : 'user',  // Устанавливаем роль
       isLoggedIn: true
     };
     
